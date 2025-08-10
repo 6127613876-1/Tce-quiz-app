@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { styles } from './common/styles';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const Auth = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -67,7 +68,7 @@ const Auth = () => {
 
   const handleUserLogin = async () => {
     if (!userEmail || !userPassword) {
-      alert('Please enter both email and password');
+      toast.info('Please enter both email and password');
       return;
     }
     try {
@@ -87,10 +88,10 @@ const Auth = () => {
           navigate('/student', { replace: true });
         }
       } else {
-        alert('Invalid login credentials.');
+        toast.error('Invalid login credentials.');
       }
     } catch (error) {
-      alert('Login failed: ' + error.message);
+      toast.error('Login failed: ' + error.message);
     }
   };
 
@@ -114,7 +115,7 @@ const Auth = () => {
       });
 
       if (response.success) {
-        alert(`Registration successful as ${role === 'admin' ? 'Faculty' : 'Student'}! Please login.`);
+        toast.success(`Registration successful as ${role === 'admin' ? 'Faculty' : 'Student'}! Please login.`);
         setShowRegistration(false);
         setRegistrationData({ name: '', email: '', password: '', confirmPassword: '' });
         setRegistrationError('');
@@ -133,6 +134,7 @@ const Auth = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
+        <ToastContainer />
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           <img

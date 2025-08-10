@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { styles } from '../common/styles';
 import LoadingError from '../common/LoadingError';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const Student = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -104,19 +105,19 @@ const Student = () => {
           setStudentView('form');
           setUserAnswers(new Array(shuffledQuestions.length).fill(null));
         } else if (!quiz.isActive) {
-          alert('This quiz is not currently active. Please contact your instructor.');
+          toast.info('This quiz is not currently active. Please contact your instructor.');
         } else {
-          alert('This quiz has no questions yet. Please try again later.');
+          toast.info('This quiz has no questions yet. Please try again later.');
         }
       }
     } catch (error) {
-      alert('Invalid quiz code or quiz not found. Please check and try again.');
+      toast.error('Invalid quiz code or quiz not found. Please check and try again.');
     }
   };
 
   const startStudentQuiz = async () => {
     if (!studentInfo.name.trim() || !studentInfo.regNo.trim() || !studentInfo.department) {
-      alert('Please fill in all required fields!');
+      toast.info('Please fill in all required fields!');
       return;
     }
     const pending = await checkPendingResume(studentInfo.name, studentInfo.regNo, currentQuiz.sessionId);
@@ -207,7 +208,7 @@ const Student = () => {
           setStudentView('result');
         }
       } catch (error) {
-        alert('Failed to submit quiz: ' + error.message);
+        toast.error('Failed to submit quiz: ' + error.message);
       }
     },
     [userAnswers, currentQuiz, studentInfo, currentQuestion, timeLeft, tabSwitchCount, isResuming, originalTimeAllotted]
@@ -256,7 +257,7 @@ const Student = () => {
 
   const handleResumeQuiz = async () => {
     if (!violationId) {
-      alert('Waiting for admin approval...');
+      toast.info('Waiting for admin approval...');
       return;
     }
     try {
@@ -280,7 +281,7 @@ const Student = () => {
           setTabSwitchCount(0);
           setIsResuming(true);
           setStudentView('quiz');
-          alert('Quiz resumed successfully!');
+          toast.success('Quiz resumed successfully!');
         } else if (response.actionType === 'restart') {
           setCurrentQuiz(response.quizData);
           setStudentInfo(response.studentInfo);
@@ -291,11 +292,11 @@ const Student = () => {
           setTabSwitchCount(0);
           setIsResuming(true);
           setStudentView('quiz');
-          alert('Quiz restarted successfully!');
+          toast.success('Quiz restarted successfully!');
         }
       }
     } catch (error) {
-      alert(error?.message || 'Approval not ready yet.');
+      toast.error(error?.message || 'Approval not ready yet.');
     }
   };
 
@@ -491,6 +492,7 @@ const Student = () => {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
+          <ToastContainer />
           <LoadingError loading={loading} error={error} />
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <h2>Join a Quiz</h2>
@@ -519,6 +521,7 @@ const Student = () => {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
+          <ToastContainer />
           <LoadingError loading={loading} error={error} />
           <h2>Student Information</h2>
           <input
@@ -564,6 +567,7 @@ const Student = () => {
 
     return (
       <div style={styles.container}>
+        <ToastContainer />
         {showWarning && <div style={styles.warningBanner}>{warningMessage}</div>}
         <div style={styles.card}>
           <div style={styles.timer}>{formatTime(timeLeft)}</div>
@@ -646,7 +650,9 @@ const Student = () => {
   if (studentView === 'result') {
     const { correctAnswers, wrongAnswers, scorePercentage, grade } = calculateStudentResults();
     return (
+      
       <div style={styles.container}>
+        <ToastContainer />
         <div style={styles.card}>
           <div style={styles.resultCard}>
             <h2>Quiz Result</h2>
@@ -668,6 +674,7 @@ const Student = () => {
     return (
       <div style={styles.container}>
         <div style={styles.waitingCard}>
+          <ToastContainer />
           <h2>Quiz Suspended</h2>
           <p>{suspensionMessage}</p>
           <button style={styles.button} onClick={handleResumeQuiz} disabled={loading}>

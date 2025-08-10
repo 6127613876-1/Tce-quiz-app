@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { styles } from '../common/styles';
 import LoadingError from '../common/LoadingError';
+import { AlertHeading } from 'react-bootstrap';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const Admin = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -37,14 +41,7 @@ const Admin = () => {
 
   const API_BASE_URL = 'http://localhost:3001';
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    setIsAdminAuthenticated(false);
-    setActiveAdminSection(null);
-    navigate('/login', { replace: true });
-  };
-
+  
   const apiCall = async (endpoint, method = 'GET', data = null) => {
     setLoading(true);
     setError('');
@@ -75,10 +72,10 @@ const Admin = () => {
         setIsAdminAuthenticated(true);
         await loadQuizSessions();
       } else {
-        alert('Invalid admin code!');
+        toast.error('Invalid admin code!');
       }
     } catch (error) {
-      alert('Login failed: ' + error.message);
+      toast.error('Login failed: ' + error.message);
     }
   };
 
@@ -87,7 +84,7 @@ const Admin = () => {
       const sessions = await apiCall('/api/quiz-sessions');
       setQuizSessions(sessions);
     } catch (error) {
-      alert('Failed to load quiz sessions: ' + error.message);
+      toast.error('Failed to load quiz sessions: ' + error.message);
     }
   };
 
@@ -99,9 +96,9 @@ const Admin = () => {
         setCurrentSessionId(newSession.sessionId);
         setActiveAdminSection('create');
         await loadQuizSessions();
-        alert(`Session created with ID: ${newSession.sessionId}`);
+        toast.success(`Session created with ID: ${newSession.sessionId}`);
       } catch (error) {
-        alert('Failed to create session: ' + error.message);
+        toast.error('Failed to create session: ' + error.message);
       }
     }
   };
@@ -122,12 +119,12 @@ const Admin = () => {
         setOptionD('');
         setCorrectOption('');
         await loadQuizSessions();
-        alert('Question added successfully!');
+        toast.success('Question added successfully!');
       } catch (error) {
-        alert('Failed to add question: ' + error.message);
+        toast.error('Failed to add question: ' + error.message);
       }
     } else {
-      alert('Please fill all fields!');
+      toast.info('Please fill all fields!');
     }
   };
 
@@ -141,7 +138,7 @@ const Admin = () => {
           if (results.errors.length > 0) {
             const errorMessages = results.errors.map((e) => `Row ${e.row + 1}: ${e.message}`);
             setCsvErrors(errorMessages);
-            alert('CSV parsing errors found. Check the preview section.');
+            toast.error('CSV parsing errors found. Check the preview section.');
             return;
           }
           const requiredColumns = ['Question', 'Option A', 'Option B', 'Option C', 'Option D', 'Correct Answer'];
@@ -149,7 +146,7 @@ const Admin = () => {
           const missingColumns = requiredColumns.filter((col) => !csvColumns.includes(col));
           if (missingColumns.length > 0) {
             setCsvErrors([`Missing required columns: ${missingColumns.join(', ')}`]);
-            alert(`Missing required columns: ${missingColumns.join(', ')}\n\nRequired columns: ${requiredColumns.join(', ')}`);
+            toast.error(`Missing required columns: ${missingColumns.join(', ')}\n\nRequired columns: ${requiredColumns.join(', ')}`);
             return;
           }
           const questions = results.data.map((row, index) => {
@@ -187,7 +184,7 @@ const Admin = () => {
         },
         error: (error) => {
           setCsvErrors([`Error reading CSV file: ${error.message}`]);
-          alert('Error reading CSV file: ' + error.message);
+          toast.error('Error reading CSV file: ' + error.message);
         },
       });
     });
@@ -195,11 +192,11 @@ const Admin = () => {
 
   const handleCsvUpload = async () => {
     if (!csvPreview.length || !currentSessionId) {
-      alert('No questions to upload or session not selected');
+      toast.error('No questions to upload or session not selected');
       return;
     }
     if (csvErrors.length > 0) {
-      alert('Please fix the errors before uploading');
+      toast.error('Please fix the errors before uploading');
       return;
     }
     try {
@@ -211,9 +208,9 @@ const Admin = () => {
       const fileInput = document.querySelector('input[type="file"]');
       if (fileInput) fileInput.value = '';
       await loadQuizSessions();
-      alert(`Successfully uploaded ${csvPreview.length} questions!`);
+      toast.success(`Successfully uploaded ${csvPreview.length} questions!`);
     } catch (error) {
-      alert('Failed to upload CSV questions: ' + error.message);
+      toast.error('Failed to upload CSV questions: ' + error.message);
     }
   };
 
@@ -228,7 +225,7 @@ const Admin = () => {
 
   const handleAddPassage = async () => {
     if (!passageTitle.trim() || !passageText.trim() || !currentSessionId) {
-      alert('Please fill in both title and passage text!');
+      toast.info('Please fill in both title and passage text!');
       return;
     }
     try {
@@ -237,19 +234,19 @@ const Admin = () => {
       setPassageTitle('');
       setPassageText('');
       await loadQuizSessions();
-      alert('Passage added successfully!');
+      toast.success('Passage added successfully!');
     } catch (error) {
-      alert('Failed to add passage: ' + error.message);
+      toast.error('Failed to add passage: ' + error.message);
     }
   };
 
   const handleAddAudio = async () => {
     if (!audioFile) {
-      alert('Please select an audio file first!');
+      toast.info('Please select an audio file first!');
       return;
     }
     if (!currentSessionId) {
-      alert('Please create or select a quiz session first!');
+      toast.info('Please create or select a quiz session first!');
       return;
     }
     const formData = new FormData();
@@ -261,7 +258,7 @@ const Admin = () => {
         body: formData,
       });
       if (response.ok) {
-        alert('Audio uploaded successfully!');
+        toast.success('Audio uploaded successfully!');
         setAudioFile(null);
         setAudioUrl('');
         const fileInput = document.querySelector('input[type="file"][accept="audio/*"]');
@@ -269,10 +266,10 @@ const Admin = () => {
         await loadQuizSessions();
       } else {
         const error = await response.text();
-        alert('Failed to upload audio: ' + error);
+        toast.error('Failed to upload audio: ' + error);
       }
     } catch (error) {
-      alert('Failed to upload audio: ' + error.message);
+      toast.error('Failed to upload audio: ' + error.message);
     }
   };
 
@@ -280,9 +277,9 @@ const Admin = () => {
     try {
       await apiCall(`/api/quiz-sessions/${sessionId}/start`, 'PUT');
       await loadQuizSessions();
-      alert(`Quiz Started! Students can join using code: ${sessionId}`);
+      toast.info(`Quiz Started! Students can join using code: ${sessionId}`);
     } catch (error) {
-      alert('Failed to start quiz: ' + error.message);
+      toast.error('Failed to start quiz: ' + error.message);
     }
   };
 
@@ -290,18 +287,18 @@ const Admin = () => {
     try {
       await apiCall(`/api/quiz-sessions/${sessionId}/end`, 'PUT');
       await loadQuizSessions();
-      alert('Quiz Ended!');
+      toast.info('Quiz Ended!');
     } catch (error) {
-      alert('Failed to end quiz: ' + error.message);
+      toast.error('Failed to end quiz: ' + error.message);
     }
   };
 
   const handleGenerateLink = (sessionId) => {
     const currentSession = quizSessions.find((s) => s.sessionId === sessionId);
     if (currentSession && currentSession.questions.length > 0) {
-      alert(`Quiz Code: ${sessionId}\nShare this code with students to join the quiz.`);
+      toast.info(`Quiz Code: ${sessionId}\nShare this code with students to join the quiz.`);
     } else {
-      alert('Please add at least one question before generating the code.');
+      toast.info('Please add at least one question before generating the code.');
     }
   };
 
@@ -310,17 +307,17 @@ const Admin = () => {
       const results = await apiCall(`/api/quiz-results/${sessionId}`);
       setStudentResults(results);
     } catch (error) {
-      alert('Failed to load results: ' + error.message);
+      toast.error('Failed to load results: ' + error.message);
     }
   };
 
   const handleExportCSV = () => {
     if (!resultSessionCode) {
-      alert('Please enter a quiz code first!');
+      toast.info('Please enter a quiz code first!');
       return;
     }
     if (studentResults.length === 0) {
-      alert('No results found to export!');
+      toast.error('No results found to export!');
       return;
     }
     const currentSession = quizSessions.find((s) => s.sessionId === resultSessionCode);
@@ -331,7 +328,7 @@ const Admin = () => {
 
   const exportToCSV = (data, filename) => {
     if (!data || data.length === 0) {
-      alert('No data to export!');
+      toast.error('No data to export!');
       return;
     }
     const headers = [
@@ -401,7 +398,7 @@ const Admin = () => {
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      alert('Failed to load violations: ' + error.message);
+      toast.error('Failed to load violations: ' + error.message);
     }
   };
 
@@ -409,15 +406,15 @@ const Admin = () => {
     try {
       const response = await apiCall(`/api/quiz-violations/${violationId}/resume`, 'POST');
       if (response && response.success) {
-        alert('Resume approved. The student can now continue the quiz.');
+        toast.success('Resume approved. The student can now continue the quiz.');
       } else {
-        alert(response?.message || 'Resume approved.');
+        toast.success(response?.message || 'Resume approved.');
       }
       if (violationSessionCode) {
         await loadQuizViolations(violationSessionCode);
       }
     } catch (error) {
-      alert('Failed to approve resume: ' + error.message);
+      toast.error('Failed to approve resume: ' + error.message);
     }
   };
 
@@ -432,13 +429,13 @@ const Admin = () => {
         restartReason: 'Admin approved restart due to violations',
       });
       if (response.success) {
-        alert(`Quiz restart approved for ${violation.studentName}! The student can restart without a token.`);
+        toast.info(`Quiz restart approved for ${violation.studentName}! The student can restart without a token.`);
         if (violationSessionCode) {
           await loadQuizViolations(violationSessionCode);
         }
       }
     } catch (error) {
-      alert('Failed to approve quiz restart: ' + error.message);
+      toast.error('Failed to approve quiz restart: ' + error.message);
     }
   };
 
@@ -465,6 +462,7 @@ const Admin = () => {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
+          <ToastContainer />
           <LoadingError loading={loading} error={error} />
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <h2>Admin Login</h2>
@@ -493,15 +491,9 @@ const Admin = () => {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
+          <ToastContainer />
           <LoadingError loading={loading} error={error} />
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <button
-              style={{ ...styles.button, marginBottom: '20px' }}
-              onClick={handleLogout}
-              disabled={loading}
-            >
-              ← Logout
-            </button>
             <h1>Admin Dashboard</h1>
             <p style={{ color: '#666' }}>Total Sessions: {quizSessions.length}</p>
           </div>
@@ -545,6 +537,7 @@ const Admin = () => {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
+          <ToastContainer />
           <LoadingError loading={loading} error={error} />
           <button style={{ ...styles.button, marginBottom: '20px' }} onClick={() => setActiveAdminSection(null)} disabled={loading}>
             ← Back to Dashboard
@@ -800,6 +793,7 @@ const Admin = () => {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
+          <ToastContainer />
           <LoadingError loading={loading} error={error} />
           <button style={{ ...styles.button, marginBottom: '20px' }} onClick={() => setActiveAdminSection(null)} disabled={loading}>
             ← Back to Dashboard
@@ -851,6 +845,7 @@ const Admin = () => {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
+          <ToastContainer />
           <LoadingError loading={loading} error={error} />
           <button style={{ ...styles.button, marginBottom: '20px' }} onClick={() => setActiveAdminSection(null)} disabled={loading}>
             ← Back to Dashboard
@@ -884,6 +879,7 @@ const Admin = () => {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
+          <ToastContainer />
           <LoadingError loading={loading} error={error} />
           <button style={{ ...styles.button, marginBottom: '20px' }} onClick={() => setActiveAdminSection(null)} disabled={loading}>
             ← Back to Dashboard
