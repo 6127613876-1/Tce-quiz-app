@@ -13,7 +13,7 @@ const PORT = 3001;
 // Configuration
 const CONFIG = {
   MONGODB_URI: process.env.MONGODB_URI,
-  FRONTEND_URL: 'http://localhost:5174/',
+  FRONTEND_URL: 'http://localhost:5173/',
   ADMIN_CODE: 'admin123',
   NODE_ENV: 'development'
 };
@@ -48,7 +48,7 @@ const audioUpload = multer({
 });
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5174', 'http://localhost:5174/'],
+  origin: ['http://localhost:5173', 'http://localhost:5173/'],
   credentials: true
 }));
 app.use(json());
