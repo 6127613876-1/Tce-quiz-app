@@ -38,7 +38,7 @@ const Admin = () => {
   const [selectedViolation, setSelectedViolation] = useState(null);
   const [showViolationDetails, setShowViolationDetails] = useState(false);
 
-  const API_BASE_URL = 'http://localhost:3001';
+  const API_BASE_URL = 'https://tce-quiz-app.onrender.com';
 
   
   const apiCall = async (endpoint, method = 'GET', data = null) => {

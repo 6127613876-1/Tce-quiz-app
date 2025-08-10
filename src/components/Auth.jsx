@@ -31,7 +31,7 @@ const Auth = () => {
     }
   }, [navigate]);
 
-  const API_BASE_URL = 'http://localhost:3001';
+  const API_BASE_URL = 'https://tce-quiz-app.onrender.com';
 
   const determineRoleFromEmail = (email) => {
     const domain = email.toLowerCase().split('@')[1];

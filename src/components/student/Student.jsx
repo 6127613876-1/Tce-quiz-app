@@ -27,7 +27,7 @@ const Student = () => {
   const [selectedPassage, setSelectedPassage] = useState(null);
   const [showPassageModal, setShowPassageModal] = useState(false);
 
-  const API_BASE_URL = 'http://localhost:3001';
+  const API_BASE_URL = 'https://tce-quiz-app.onrender.com';
 
   const apiCall = async (endpoint, method = 'GET', data = null) => {
     setLoading(true);
