@@ -77,7 +77,6 @@ const Auth = () => {
       });
 
       if (response.success && response.user) {
-        console.log('User object:', response.user);
         localStorage.setItem('user', JSON.stringify(response.user));
         setUser(response.user);
 
