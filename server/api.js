@@ -1777,11 +1777,6 @@ app.get('/api/quiz-sessions/:sessionId/audio', async (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Quiz API Server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`🌍 Environment: ${CONFIG.NODE_ENV}`);
-  console.log(`📝 Admin Code: ${CONFIG.ADMIN_CODE}`);
-  console.log(`🔗 Frontend URL: ${CONFIG.FRONTEND_URL}`);
-  console.log(`💾 MongoDB URI: ${CONFIG.MONGODB_URI}`);
 });
 
 
