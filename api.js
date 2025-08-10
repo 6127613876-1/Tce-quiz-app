@@ -13,7 +13,7 @@ const PORT = 3001;
 // Configuration
 const CONFIG = {
   MONGODB_URI: process.env.MONGODB_URI,
-  FRONTEND_URL: 'http://localhost:5173/',
+  FRONTEND_URL: 'https://tce-quiz-app.pages.dev/',
   ADMIN_CODE: 'admin123',
   NODE_ENV: 'development'
 };
@@ -48,7 +48,7 @@ const audioUpload = multer({
 });
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5173/'],
+  origin: ['http://localhost:5173', 'http://localhost:5173/','https://tce-quiz-app.pages.dev/'],
   credentials: true
 }));
 app.use(json());
