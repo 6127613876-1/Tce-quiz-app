@@ -13,7 +13,7 @@ const PORT = 3001;
 // Configuration
 const CONFIG = {
   MONGODB_URI: process.env.MONGODB_URI,
-  FRONTEND_URL: 'https://tce-quiz-app.pages.dev/',
+  FRONTEND_URL: 'http://localhost:5174/',
   ADMIN_CODE: 'admin123',
   NODE_ENV: 'development'
 };
@@ -48,10 +48,12 @@ const audioUpload = multer({
 });
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5173/','https://tce-quiz-app.pages.dev/',"https://tce-quiz-app.pages.dev"],
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5173/', 'http://localhost:5174/', 'https://tce-quiz-app.pages.dev/',"https://tce-quiz-app.pages.dev"],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
+// Serve uploaded audio files statically
+app.use('/uploads/audio', express.static('uploads/audio'));
 app.use(json());
 app.use(urlencoded({ extended: true }));
 
@@ -736,6 +738,88 @@ app.post('/api/quiz-sessions/:sessionId/questions', async (req, res) => {
   }
 });
 
+// Update quiz session (for editing questions)
+app.put('/api/quiz-sessions/:sessionId', async (req, res) => {
+  try {
+    const sessionId = req.params.sessionId;
+    const updateData = req.body;
+    
+    if (!sessionId) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Session ID is required' 
+      });
+    }
+    
+    const session = await QuizSession.findOne({ 
+      sessionId: sessionId.toUpperCase() 
+    });
+    
+    if (!session) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Quiz session not found' 
+      });
+    }
+    
+    // Update questions if provided
+    if (updateData.questions) {
+      // Validate all questions
+      for (let i = 0; i < updateData.questions.length; i++) {
+        const q = updateData.questions[i];
+        if (!q.question || !q.options || !q.correct) {
+          return res.status(400).json({ 
+            success: false,
+            message: `Question ${i + 1}: Missing required fields` 
+          });
+        }
+        if (!q.options.a || !q.options.b || !q.options.c || !q.options.d) {
+          return res.status(400).json({ 
+            success: false,
+            message: `Question ${i + 1}: All four options required` 
+          });
+        }
+        if (!['A', 'B', 'C', 'D'].includes(q.correct)) {
+          return res.status(400).json({ 
+            success: false,
+            message: `Question ${i + 1}: Correct answer must be A, B, C, or D` 
+          });
+        }
+      }
+      session.questions = updateData.questions;
+    }
+    
+    // Update passages if provided
+    if (updateData.passages !== undefined) {
+      session.passages = updateData.passages;
+    }
+    
+    // Update audio files if provided
+    if (updateData.audioFiles !== undefined) {
+      session.audioFiles = updateData.audioFiles;
+    }
+    
+    // Update other fields if provided
+    if (updateData.name) session.name = updateData.name;
+    if (updateData.isActive !== undefined) session.isActive = updateData.isActive;
+    
+    await session.save();
+    
+    res.json({
+      success: true,
+      message: 'Quiz session updated successfully',
+      session: session
+    });
+  } catch (error) {
+    console.error('Update session error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error updating quiz session',
+      error: error.message 
+    });
+  }
+});
+
 // Add CSV questions to quiz session
 app.post('/api/quiz-sessions/:sessionId/questions/csv', async (req, res) => {
   try {
@@ -1072,14 +1156,16 @@ app.post('/api/quiz-sessions/:sessionId/audio', audioUpload.single('audio'), asy
     }
     
     // Create audio file object
-    const audioFile = {
-      filename: req.file.filename,
-      originalName: req.file.originalname,
-      path: req.file.path,
-      size: req.file.size,
-      uploadedAt: new Date()
-    };
-    
+    // Create audio file object
+const audioFile = {
+  filename: req.file.filename,
+  originalName: req.file.originalname,
+  // Public URL path so frontend can access directly
+  path: `/uploads/audio/${req.file.filename}`,
+  size: req.file.size,
+  uploadedAt: new Date()
+};
+
     // Initialize audioFiles array if it doesn't exist
     if (!session.audioFiles) {
       session.audioFiles = [];
