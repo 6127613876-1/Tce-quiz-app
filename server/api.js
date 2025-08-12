@@ -48,7 +48,7 @@ const audioUpload = multer({
 });
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5173/', 'http://localhost:5174/', 'https://tce-quiz-app.pages.dev/',"https://tce-quiz-app.pages.dev"],
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5173/', 'http://localhost:5174/', 'https://quiz-zs6.pages.dev/',"https://quiz-zs6.pages.dev"],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
